@@ -22,9 +22,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import com.example.dogglers.R
 import com.example.dogglers.const.Layout
 import com.example.dogglers.data.DataSource.dogs
+import com.example.dogglers.databinding.GridListItemBinding
+import com.example.dogglers.databinding.VerticalHorizontalListItemBinding
 import com.example.dogglers.model.Dog
 
 /**
@@ -34,51 +37,82 @@ import com.example.dogglers.model.Dog
 class DogCardAdapter(
     private val context: Context?,
     private val layout: Int
-): RecyclerView.Adapter<DogCardAdapter.DogCardViewHolder>() {
+): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val data: List<Dog> = dogs
 
-    /**
-     * Initialize view elements
-     */
-    class DogCardViewHolder(view: View?): RecyclerView.ViewHolder(view!!) {
-        fun bind(dog: Dog) {
-            val dogImage: ImageView = itemView.findViewById(R.id.dog_image)
-            val dogName: TextView = itemView.findViewById(R.id.dog_name_text)
-            val dogAge: TextView = itemView.findViewById(R.id.dog_age_text)
-            val dogHobbies: TextView = itemView.findViewById(R.id.dog_hobby_text)
-
-            dogImage.setImageResource(dog.imageResourceId)
-            dogName.text = dog.name
-            dogAge.text = dog.age
-            dogHobbies.text = dog.hobbies
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (layout == Layout.GRID) {
+            GridViewHolder.from(parent)
+        } else {
+            LinearViewHolder.from(parent)
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DogCardViewHolder {
-        val layout = if (layout == Layout.GRID) {
-            R.layout.grid_list_item
-        } else {
-            R.layout.vertical_horizontal_list_item
-        }
-
-        return DogCardViewHolder(
-            LayoutInflater.from(parent.context).inflate(layout, parent, false)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val resources = context?.resources
+        val currentData = data[position]
+        val dog = Dog(
+            currentData.imageResourceId,
+            currentData.name,
+            resources?.getString(R.string.dog_age, currentData.age).toString(),
+            resources?.getString(R.string.dog_hobbies, currentData.hobbies).toString()
         )
+        when (holder) {
+            is LinearViewHolder -> holder.bind(dog)
+            is GridViewHolder -> holder.bind(dog)
+        }
     }
 
     override fun getItemCount(): Int = data.size
 
-    override fun onBindViewHolder(holder: DogCardViewHolder, position: Int) {
-        val resources = context?.resources
-        val dog = data[position]
-        holder.bind(
-            Dog(
-                dog.imageResourceId,
-                dog.name,
-                resources?.getString(R.string.dog_age, dog.age).toString(),
-                resources?.getString(R.string.dog_hobbies, dog.hobbies).toString()
-            )
-        )
+    class LinearViewHolder private constructor(
+        val binding: VerticalHorizontalListItemBinding
+    ): RecyclerView.ViewHolder(binding.root) {
+        fun bind(dog: Dog) {
+            binding.apply {
+                dogImage.setImageResource(dog.imageResourceId)
+                dogNameText.text = dog.name
+                dogAgeText.text = dog.age
+                dogHobbyText.text = dog.hobbies
+            }
+        }
+
+        companion object {
+            fun from(parent: ViewGroup): LinearViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = VerticalHorizontalListItemBinding.inflate(
+                    layoutInflater,
+                    parent,
+                    false
+                )
+                return LinearViewHolder(binding)
+            }
+        }
+    }
+
+    class GridViewHolder private constructor(
+        val binding: GridListItemBinding
+    ): RecyclerView.ViewHolder(binding.root) {
+        fun bind(dog: Dog) {
+            binding.apply {
+                dogImage.setImageResource(dog.imageResourceId)
+                dogNameText.text = dog.name
+                dogAgeText.text = dog.age
+                dogHobbyText.text = dog.hobbies
+            }
+        }
+
+        companion object {
+            fun from(parent: ViewGroup): GridViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = GridListItemBinding.inflate(
+                    layoutInflater,
+                    parent,
+                    false
+                )
+                return GridViewHolder(binding)
+            }
+        }
     }
 }
