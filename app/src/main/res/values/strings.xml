@@ -20,6 +20,4 @@
     <string name="vertical">Vertical</string>
     <string name="horizontal">Horizontal</string>
     <string name="grid">Grid</string>
-    <string name="age_text">Age: %d</string>
-    <string name="hobbies">Hobbies: %s</string>
 </resources>
